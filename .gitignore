@@ -43,4 +43,5 @@ build/
 ### Project Specific ###
 models/
 *.log
-application-local.properties 
+application-local.properties
+*.zip 

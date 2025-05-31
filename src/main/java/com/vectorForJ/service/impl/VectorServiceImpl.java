@@ -3,9 +3,13 @@ package com.vectorForJ.service.impl;
 import com.vectorForJ.model.Vector;
 import com.vectorForJ.service.VectorService;
 import com.vectorForJ.storage.VectorStorage;
+import com.vectorForJ.exception.VectorDBException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,12 +18,41 @@ import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class VectorServiceImpl implements VectorService {
+    private static final Logger logger = LoggerFactory.getLogger(VectorServiceImpl.class);
     private final VectorStorage vectorStorage;
     private final ReentrantLock createLock = new ReentrantLock();
+
+    @Value("${vector.similarity.threshold:0.95}")
+    private double similarityThreshold;
 
     @Autowired
     public VectorServiceImpl(VectorStorage vectorStorage) {
         this.vectorStorage = vectorStorage;
+    }
+
+    private boolean isSimilarToExisting(double[] embedding) {
+        // Find the most similar vector
+        List<Vector> similarVectors = vectorStorage.findNearest(embedding, 1);
+        if (similarVectors.isEmpty()) {
+            return false;
+        }
+
+        Vector mostSimilar = similarVectors.get(0);
+        double similarity = cosineSimilarity(embedding, mostSimilar.getEmbedding());
+        logger.debug("Found similar vector with similarity score: {}", similarity);
+        return similarity >= similarityThreshold;
+    }
+
+    private double cosineSimilarity(double[] a, double[] b) {
+        double dotProduct = 0.0;
+        double normA = 0.0;
+        double normB = 0.0;
+        for (int i = 0; i < a.length; i++) {
+            dotProduct += a[i] * b[i];
+            normA += a[i] * a[i];
+            normB += b[i] * b[i];
+        }
+        return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
     }
 
     @Override
@@ -32,6 +65,12 @@ public class VectorServiceImpl implements VectorService {
 
         createLock.lock();
         try {
+            // Check for similar vectors
+            if (isSimilarToExisting(vector.getEmbedding())) {
+                logger.warn("Similar vector already exists");
+                throw new VectorDBException("A similar vector already exists in the database");
+            }
+
             if (vector.getId() == null) {
                 vector.setId(UUID.randomUUID().toString());
             }
