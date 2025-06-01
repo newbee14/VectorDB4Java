@@ -17,10 +17,13 @@ import java.util.*;
 @Component
 public class VectorIndexManager {
     private static final Logger logger = LoggerFactory.getLogger(VectorIndexManager.class);
-    private static final String INDEX_FILE = "vector_index.dat";
     private static final String VECTOR_FIELD = "embedding";
     private static final String ID_FIELD = "id";
-    private static final int VECTOR_DIMENSION = 1536; // Adjust as needed
+    private static final String INDEX_FILE = "vector_index.dat";
+    private static final int VECTOR_DIMENSION = 1536;
+
+    private String indexFile = INDEX_FILE;
+    private int vectorDimension = VECTOR_DIMENSION;
 
     private final ByteBuffersDirectory directory = new ByteBuffersDirectory();
     private final StandardAnalyzer analyzer = new StandardAnalyzer();
@@ -38,10 +41,10 @@ public class VectorIndexManager {
     @PostConstruct
     public void init() {
         try {
-            File indexFile = new File(INDEX_FILE);
-            if (indexFile.exists()) {
+            File indexFileObj = new File(indexFile);
+            if (indexFileObj.exists()) {
                 // Load vectors
-                try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(INDEX_FILE))) {
+                try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(indexFile))) {
                     Map<Integer, double[]> loadedVectors = (Map<Integer, double[]>) ois.readObject();
                     for (Map.Entry<Integer, double[]> entry : loadedVectors.entrySet()) {
                         double[] embedding = entry.getValue();

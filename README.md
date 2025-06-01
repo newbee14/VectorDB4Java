@@ -49,6 +49,29 @@ vector.similarity.threshold=0.95
 spring.servlet.multipart.max-file-size=10MB
 ```
 
+## Notes on Proper Noun Handling
+
+- The application includes logic to handle proper nouns and part-of-speech-aware weighting during text processing.
+- However, the effectiveness of proper noun distinction depends on the underlying embedding model (e.g., GloVe).
+- In some cases, the model may not produce sufficiently distinct vectors for sentences differing only in proper nouns.
+- The integration test for proper noun handling is currently ignored due to this limitation.
+
+## Embedding Model
+
+This project uses the [GloVe](https://nlp.stanford.edu/projects/glove/) (Global Vectors for Word Representation) pre-trained word embeddings for generating vector representations of text.
+
+- **Model Used:** GloVe 6B, 100-dimensional vectors
+- **Download Link:** [glove.6B.zip (822 MB)](https://nlp.stanford.edu/data/glove.6B.zip)
+- **Direct File:** [glove.6B.100d.txt (347 MB)](https://nlp.stanford.edu/data/glove.6B.100d.txt)
+
+### Setup Instructions
+1. Download the GloVe model from the links above.
+2. Unzip the archive if you downloaded `glove.6B.zip`.
+3. Place the file `glove.6B.100d.txt` in the directory: `src/main/resources/models/`
+   - The final path should be: `src/main/resources/models/glove.6B.100d.txt`
+
+The application will automatically load this file at startup.
+
 ## License
 
 MIT License 
