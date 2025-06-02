@@ -100,6 +100,12 @@ The application uses Apache Lucene for vector similarity search, implementing a 
      - Use Product Quantization (PQ) for vector compression
      - Implement IVF (Inverted File) index for faster approximate search
 
+### Experimental Implementations
+
+An experimental branch `feature/indexing-experiments` explores alternative indexing strategies:
+- Dense vector indexing (HNSW, IVF)
+- Sparse vector indexing
+- Performance comparisons between different approaches
 
 ### Relevant Resources
 
