@@ -100,18 +100,6 @@ The application uses Apache Lucene for vector similarity search, implementing a 
      - Use Product Quantization (PQ) for vector compression
      - Implement IVF (Inverted File) index for faster approximate search
 
-3. **Memory Usage**:
-   - Current implementation loads all vectors into memory
-   - Could be optimized by:
-     - Implementing vector compression techniques
-     - Using memory-mapped files for large datasets
-     - Implementing batch processing for large-scale operations
-
-4. **Advanced Features**:
-   - Add support for range queries
-   - Implement filtering during search
-   - Add support for vector updates and deletions
-   - Implement batch indexing for better performance
 
 ### Relevant Resources
 
