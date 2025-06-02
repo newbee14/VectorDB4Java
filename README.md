@@ -72,6 +72,68 @@ This project uses the [GloVe](https://nlp.stanford.edu/projects/glove/) (Global 
 
 The application will automatically load this file at startup.
 
+## Indexing Strategy
+
+The application uses Apache Lucene for vector similarity search, implementing a custom indexing strategy optimized for high-dimensional vectors.
+
+### Current Implementation
+
+- **Index Structure**: Uses Lucene's `ByteBuffersDirectory` for in-memory indexing
+- **Vector Storage**: Vectors are stored as binary fields in Lucene documents
+- **Similarity Search**: Implements K-Nearest Neighbors (KNN) search using cosine similarity
+- **Performance Characteristics**:
+  - Fast for small to medium-sized datasets (up to ~100K vectors)
+  - Memory-efficient due to in-memory indexing
+  - Linear search complexity (O(n) for n vectors)
+
+### Limitations and Potential Improvements
+
+1. **Scalability**:
+   - Current implementation uses in-memory indexing, limiting dataset size
+   - Could be improved by implementing disk-based indexing for larger datasets
+   - Consider using Lucene's `MMapDirectory` or `NIOFSDirectory` for persistent storage
+
+2. **Search Performance**:
+   - Linear search becomes slow for large datasets
+   - Potential improvements:
+     - Implement HNSW (Hierarchical Navigable Small World) graph for approximate nearest neighbors
+     - Use Product Quantization (PQ) for vector compression
+     - Implement IVF (Inverted File) index for faster approximate search
+
+3. **Memory Usage**:
+   - Current implementation loads all vectors into memory
+   - Could be optimized by:
+     - Implementing vector compression techniques
+     - Using memory-mapped files for large datasets
+     - Implementing batch processing for large-scale operations
+
+4. **Advanced Features**:
+   - Add support for range queries
+   - Implement filtering during search
+   - Add support for vector updates and deletions
+   - Implement batch indexing for better performance
+
+### Relevant Resources
+
+1. **Vector Search Fundamentals**:
+   - [Approximate Nearest Neighbors Oh Yeah (ANNOY)](https://github.com/spotify/annoy) - Spotify's library for approximate nearest neighbors
+   - [HNSW: Hierarchical Navigable Small World](https://arxiv.org/abs/1603.09320) - Paper on HNSW algorithm
+   - [Product Quantization for Nearest Neighbor Search](https://lear.inrialpes.fr/pubs/2011/JDS11/jegou_searching_with_quantization.pdf) - Paper on PQ technique
+
+2. **Lucene and Vector Search**:
+   - [Apache Lucene Documentation](https://lucene.apache.org/core/documentation.html)
+   - [Lucene Vector Search](https://lucene.apache.org/core/9_7_0/core/org/apache/lucene/search/VectorSimilarityQuery.html)
+   - [Elasticsearch Vector Search](https://www.elastic.co/guide/en/elasticsearch/reference/current/vector-search.html) - Example of production-grade vector search implementation
+
+3. **Alternative Solutions**:
+   - [FAISS](https://github.com/facebookresearch/faiss) - Facebook's library for efficient similarity search
+   - [Milvus](https://milvus.io/) - Open-source vector database
+   - [Weaviate](https://weaviate.io/) - Vector search engine with GraphQL API
+
+4. **Performance Optimization**:
+   - [Vector Search Performance](https://www.pinecone.io/learn/vector-search-performance/) - Guide to vector search performance
+   - [Approximate Nearest Neighbor Search](https://www.pinecone.io/learn/approximate-nearest-neighbor/) - Overview of ANN algorithms
+
 ## License
 
 MIT License 
