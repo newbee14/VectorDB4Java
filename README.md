@@ -1,4 +1,4 @@
-# VectorForJ
+# VectorDB4Java
 
 A Spring Boot application for vector similarity search with advanced text processing capabilities.
 
