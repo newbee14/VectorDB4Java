@@ -3,6 +3,7 @@ package com.vectorForJ.service.impl;
 import com.vectorForJ.exception.DocumentProcessingException;
 import com.vectorForJ.model.Vector;
 import com.vectorForJ.service.DocumentProcessingService;
+import com.vectorForJ.service.ContextAwareEmbeddingService;
 import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
 import org.deeplearning4j.models.word2vec.Word2Vec;
@@ -55,6 +56,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
     @Autowired
     private Environment environment;
+    
+    @Autowired
+    private ContextAwareEmbeddingService contextAwareEmbeddingService;
 
     public DocumentProcessingServiceImpl() {
         this.tika = new Tika();
@@ -169,6 +173,36 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
     @Override
     public double[] generateEmbedding(String text) {
+        if (StringUtils.isBlank(text)) {
+            throw new DocumentProcessingException("Input text cannot be empty");
+        }
+
+        // Try context-aware embedding first if available
+        if (contextAwareEmbeddingService != null && contextAwareEmbeddingService.isServiceAvailable()) {
+            try {
+                // Generate static embedding first
+                double[] staticEmbedding = generateStaticEmbedding(text);
+                
+                // Generate hybrid embedding combining static and contextual
+                double[] hybridEmbedding = contextAwareEmbeddingService.generateHybridEmbedding(text, staticEmbedding);
+                
+                logger.debug("Generated hybrid embedding using context-aware service");
+                return hybridEmbedding;
+                
+            } catch (Exception e) {
+                logger.warn("Context-aware embedding failed, falling back to static: {}", e.getMessage());
+                return generateStaticEmbedding(text);
+            }
+        }
+        
+        // Fallback to static embedding
+        return generateStaticEmbedding(text);
+    }
+    
+    /**
+     * Generate static embedding using GloVe/Word2Vec approach
+     */
+    public double[] generateStaticEmbedding(String text) {
         if (StringUtils.isBlank(text)) {
             throw new DocumentProcessingException("Input text cannot be empty");
         }

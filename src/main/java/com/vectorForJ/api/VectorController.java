@@ -6,6 +6,7 @@ import com.vectorForJ.constants.ApplicationConstants.Defaults;
 import com.vectorForJ.model.Vector;
 import com.vectorForJ.service.DocumentProcessingService;
 import com.vectorForJ.service.VectorService;
+import com.vectorForJ.service.ContextAwareEmbeddingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,11 +36,14 @@ public class VectorController {
 
     private final VectorService vectorService;
     private final DocumentProcessingService documentProcessingService;
+    private final ContextAwareEmbeddingService contextAwareEmbeddingService;
 
     @Autowired
-    public VectorController(VectorService vectorService, DocumentProcessingService documentProcessingService) {
+    public VectorController(VectorService vectorService, DocumentProcessingService documentProcessingService, 
+                           ContextAwareEmbeddingService contextAwareEmbeddingService) {
         this.vectorService = vectorService;
         this.documentProcessingService = documentProcessingService;
+        this.contextAwareEmbeddingService = contextAwareEmbeddingService;
     }
 
     /**
@@ -141,5 +145,48 @@ public class VectorController {
     @GetMapping("/count")
     public ResponseEntity<Integer> getVectorCount() {
         return ResponseEntity.ok(vectorService.getVectorCount());
+    }
+
+    /**
+     * Creates a vector using context-aware embeddings.
+     */
+    @Operation(summary = "Process text with context-aware embeddings", 
+               description = "Creates a vector embedding from raw text using context-aware transformer models")
+    @GetMapping("/context-aware/text")
+    public ResponseEntity<Vector> processTextContextAware(
+            @Parameter(description = "Text to process with context awareness")
+            @RequestParam(File.TEXT_PARAM) @Valid String text) {
+        if (!contextAwareEmbeddingService.isServiceAvailable()) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        double[] embedding = contextAwareEmbeddingService.generateContextAwareEmbedding(text);
+        Vector vector = new Vector(null, embedding, "context-aware-text", embedding.length);
+        return ResponseEntity.ok(vectorService.createVector(vector));
+    }
+
+    /**
+     * Creates a vector using hybrid embeddings (static + contextual).
+     */
+    @Operation(summary = "Process text with hybrid embeddings", 
+               description = "Creates a vector embedding combining static and contextual approaches")
+    @GetMapping("/hybrid/text")
+    public ResponseEntity<Vector> processTextHybrid(
+            @Parameter(description = "Text to process with hybrid approach")
+            @RequestParam(File.TEXT_PARAM) @Valid String text) {
+        // This will automatically use hybrid approach if context-aware service is available
+        double[] embedding = documentProcessingService.generateEmbedding(text);
+        Vector vector = new Vector(null, embedding, "hybrid-text", embedding.length);
+        return ResponseEntity.ok(vectorService.createVector(vector));
+    }
+
+    /**
+     * Check if context-aware embedding service is available.
+     */
+    @Operation(summary = "Check context-aware service status", 
+               description = "Returns whether context-aware embedding service is available")
+    @GetMapping("/context-aware/status")
+    public ResponseEntity<Boolean> getContextAwareStatus() {
+        return ResponseEntity.ok(contextAwareEmbeddingService.isServiceAvailable());
     }
 } 
