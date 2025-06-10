@@ -72,6 +72,23 @@ This project uses the [GloVe](https://nlp.stanford.edu/projects/glove/) (Global 
 
 The application will automatically load this file at startup.
 
+## Context-Aware Embeddings
+
+Next enhancement: replace static GloVe embeddings with **context-aware embeddings** for better semantic understanding.
+
+### Key Features
+- **Transformer Integration**: BERT/RoBERTa/Sentence-BERT models
+- **Context Sensitivity**: Word meanings based on surrounding text
+- **Hybrid Approach**: Combine static + contextual embeddings
+- **Better Disambiguation**: Handle words with multiple meanings
+
+### Benefits
+- Improved semantic search accuracy
+- Better similarity matching for nuanced text
+- Enhanced duplicate detection
+
+*Note: Under development in `feature/context-aware-embeddings` branch.*
+
 ## Indexing Strategy
 
 The application uses Apache Lucene for vector similarity search, implementing a custom indexing strategy optimized for high-dimensional vectors.
